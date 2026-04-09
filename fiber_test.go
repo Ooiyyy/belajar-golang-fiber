@@ -14,10 +14,14 @@ import (
 	_ "embed"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/template/mustache/v2"
 	"github.com/stretchr/testify/assert"
 )
 
+var engine = mustache.New("./template", ".mustache")
+
 var app = fiber.New(fiber.Config{
+	Views: engine,
 	ErrorHandler: func(ctx *fiber.Ctx, err error) error {
 		ctx.Status(fiber.StatusInternalServerError)
 		return ctx.SendString("Error : " + err.Error())
@@ -363,4 +367,25 @@ func TestErrorHandling(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "Error : ups", string(bytes))
 
+}
+
+func TestView(t *testing.T) {
+	app.Get("/view", func(ctx *fiber.Ctx) error {
+		return ctx.Render("index", fiber.Map{
+			"title":   "Hello title",
+			"header":  "Hello header",
+			"content": "Hello content",
+		})
+	})
+
+	request := httptest.NewRequest("GET", "/view", nil)
+	resposnse, err := app.Test(request)
+	assert.Nil(t, err)
+	assert.Equal(t, 200, resposnse.StatusCode)
+
+	bytes, err := io.ReadAll(resposnse.Body)
+	assert.Nil(t, err)
+	assert.Contains(t, string(bytes), "Hello title")
+	assert.Contains(t, string(bytes), "Hello header")
+	assert.Contains(t, string(bytes), "Hello content")
 }
