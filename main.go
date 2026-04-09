@@ -15,14 +15,14 @@ func main() {
 		Prefork:      true,
 	})
 
-	app.Use(func(ctx *fiber.Ctx) error {
+	app.Use("/api", func(ctx *fiber.Ctx) error {
 		fmt.Println("Middleware before processing")
 		err := ctx.Next()
 		fmt.Println("Middleware after processing")
 		return err
 	})
 
-	app.Get("/", func(ctx *fiber.Ctx) error {
+	app.Get("/api/hello", func(ctx *fiber.Ctx) error {
 		return ctx.SendString("Hello world!")
 	})
 	if fiber.IsChild() {
