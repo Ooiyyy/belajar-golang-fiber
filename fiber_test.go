@@ -16,7 +16,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var app = fiber.New()
+var app = fiber.New(fiber.Config{
+	ErrorHandler: func(ctx *fiber.Ctx, err error) error {
+		ctx.Status(fiber.StatusInternalServerError)
+		return ctx.SendString("Error : " + err.Error())
+	},
+})
 
 func TestRoutingHello(t *testing.T) {
 	app.Get("/", func(ctx *fiber.Ctx) error {
