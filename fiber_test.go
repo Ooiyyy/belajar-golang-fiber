@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -345,5 +346,21 @@ func TestStatic(t *testing.T) {
 	bytes, err := io.ReadAll(resposnse.Body)
 	assert.Nil(t, err)
 	assert.Equal(t, "Download Berhasil!", string(bytes))
+
+}
+
+func TestErrorHandling(t *testing.T) {
+	app.Get("/error", func(ctx *fiber.Ctx) error {
+		return errors.New("ups")
+	})
+
+	request := httptest.NewRequest("GET", "/error", nil)
+	resposnse, err := app.Test(request)
+	assert.Nil(t, err)
+	assert.Equal(t, 500, resposnse.StatusCode)
+
+	bytes, err := io.ReadAll(resposnse.Body)
+	assert.Nil(t, err)
+	assert.Equal(t, "Error : ups", string(bytes))
 
 }
